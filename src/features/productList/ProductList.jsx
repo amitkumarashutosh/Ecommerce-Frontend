@@ -22,7 +22,7 @@ const products = [
     color: "Black",
   },
   {
-    id: 1,
+    id: 2,
     name: "Basic Tee",
     href: "#",
     imageSrc:
