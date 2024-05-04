@@ -8,7 +8,7 @@ const fetchAllProducts = async () => {
   }
 };
 
-const fetchProductsByFilters = async (filter, sort) => {
+const fetchProductsByFilters = async (filter, sort, pagination) => {
   let queryString = "";
   for (let key in filter) {
     const categoryValue = filter[key];
@@ -22,12 +22,17 @@ const fetchProductsByFilters = async (filter, sort) => {
     queryString += `${key}=${sort[key]}&`;
   }
 
+  for (let key in pagination) {
+    queryString += `${key}=${pagination[key]}&`;
+  }
+
   try {
     const response = await fetch(
       "http://localhost:8080/products?" + queryString
     );
     const data = await response.json();
-    return { data };
+    const totalItems = 99;
+    return { data: { products: data, totalItems: totalItems } };
   } catch (error) {
     throw new Error(error.message);
   }
