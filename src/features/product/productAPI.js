@@ -38,4 +38,29 @@ const fetchProductsByFilters = async (filter, sort, pagination) => {
   }
 };
 
-export { fetchAllProducts, fetchProductsByFilters };
+const fetchCategories = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/categories");
+    const data = await response.json();
+    return { data };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+const fetchBrands = async () => {
+  try {
+    const response = await fetch("http://localhost:8080/brands");
+    const data = await response.json();
+    return { data };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+export {
+  fetchAllProducts,
+  fetchProductsByFilters,
+  fetchCategories,
+  fetchBrands,
+};

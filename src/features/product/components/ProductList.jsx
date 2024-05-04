@@ -13,6 +13,8 @@ import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
   fetchAllProductsAsync,
+  fetchBrandsAsync,
+  fetchCategoriesAsync,
   fetchProductsByFiltersAsync,
 } from "../productSlice";
 import { ITEMS_PER_PAGE } from "../../../app/constants";
@@ -21,83 +23,6 @@ const sortOptions = [
   { name: "Best Rating", sort: "rating", order: "desc", current: false },
   { name: "Price: Low to High", sort: "price", order: "asc", current: false },
   { name: "Price: High to Low", sort: "price", order: "desc", current: false },
-];
-
-const filters = [
-  {
-    id: "category",
-    name: "Category",
-    options: [
-      { value: "smartphones", label: "Smartphones", checked: false },
-      { value: "laptops", label: "Laptops", checked: false },
-      { value: "fragrances", label: "Fragrances", checked: false },
-      { value: "skincare", label: "Skincare", checked: false },
-      { value: "groceries", label: "Groceries", checked: false },
-      { value: "home-decoration", label: "Home decoration", checked: false },
-      { value: "furniture", label: "Furniture", checked: false },
-      { value: "tops", label: "Tops", checked: false },
-      { value: "womens-dresses", label: "Womens-dresses", checked: false },
-      { value: "womens-shoes", label: "Womens-shoes", checked: false },
-      { value: "mens-shirts", label: "Mens-shirts", checked: false },
-      { value: "mens-shoes", label: "Mens-shoes", checked: false },
-      { value: "mens-watches", label: "Mens-watches", checked: false },
-      { value: "womens-watches", label: "Womens-watches", checked: false },
-      { value: "womens-bags", label: "Womens Bags", checked: false },
-      { value: "womens-jewellery", label: "Womens Jewellery", checked: false },
-      { value: "sunglasses", label: "Sunglasses", checked: false },
-      { value: "automotive", label: "Automotive", checked: false },
-      { value: "motorcycle", label: "Motorcycle", checked: false },
-      { value: "lighting", label: "Lighting", checked: false },
-    ],
-  },
-  {
-    id: "brand",
-    name: "Brand",
-    options: [
-      { value: "apple", label: "Apple", checked: false },
-      { value: "samsung", label: "Samsung", checked: false },
-      { value: "oppo", label: "OPPO", checked: false },
-      { value: "huawei", label: "Huawei", checked: false },
-      {
-        value: "microsoft surface",
-        label: "Microsoft Surface",
-        checked: false,
-      },
-      { value: "infinix", label: "Infinix", checked: false },
-      { value: "hp pavilion", label: "HP Pavilion", checked: false },
-      { value: "acqua di gio", label: "Acqua Di Gio", checked: false },
-      { value: "royal mirage", label: "Royal Mirage", checked: false },
-      {
-        value: "fog scent xpressio",
-        label: "Fog Scent Xpressio",
-        checked: false,
-      },
-      { value: "al munakh", label: "Al Munakh", checked: false },
-      { value: "lord - al-rehab", label: "Lord - Al-Rehab", checked: false },
-      { value: "l'oreal paris", label: "L'Oreal Paris", checked: false },
-      { value: "hemani tea", label: "Hemani Tea", checked: false },
-      { value: "dermive", label: "Dermive", checked: false },
-      { value: "rorec white rice", label: "ROREC White Rice", checked: false },
-      { value: "fair & clear", label: "Fair & Clear", checked: false },
-      { value: "saaf & khaas", label: "Saaf & Khaas", checked: false },
-      { value: "bake parlor big", label: "Bake Parlor Big", checked: false },
-      { value: "fauji", label: "Fauji", checked: false },
-      { value: "dry rose", label: "Dry Rose", checked: false },
-      { value: "boho decor", label: "Boho Decor", checked: false },
-      { value: "flying wooden", label: "Flying Wooden", checked: false },
-      { value: "led lights", label: "LED Lights", checked: false },
-      { value: "luxury palace", label: "Luxury Palace", checked: false },
-      {
-        value: "golden furniture bed set",
-        label: "Golden Furniture Bed Set",
-        checked: false,
-      },
-      { value: "rattan outdoor", label: "Rattan Outdoor", checked: false },
-      { value: "kitchen shelf", label: "Kitchen Shelf", checked: false },
-      { value: "multi-purpose", label: "Multi-Purpose", checked: false },
-      { value: "amnamart", label: "Amnamart", checked: false },
-    ],
-  },
 ];
 
 function classNames(...classes) {
@@ -111,7 +36,22 @@ export default function ProductList() {
   const [sort, setSort] = useState({});
   const [page, setPage] = useState(1);
 
-  const { products, totalItems } = useSelector((state) => state.product);
+  const { products, totalItems, categories, brands } = useSelector(
+    (state) => state.product
+  );
+
+  const filters = [
+    {
+      id: "category",
+      name: "Category",
+      options: categories,
+    },
+    {
+      id: "brand",
+      name: "Brand",
+      options: brands,
+    },
+  ];
 
   const handleFilter = (e, section, option) => {
     const newFilter = { ...filter };
@@ -148,6 +88,11 @@ export default function ProductList() {
   useEffect(() => {
     setPage(1);
   }, [totalItems, sort]);
+
+  useEffect(() => {
+    dispatch(fetchBrandsAsync());
+    dispatch(fetchCategoriesAsync());
+  }, []);
 
   return (
     <div className="bg-white">
@@ -462,18 +407,22 @@ export default function ProductList() {
           {/* pagination */}
           <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
             <div className="flex flex-1 justify-between sm:hidden">
-              <a
-                href="#"
-                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              <div
+                className="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+                onClick={() => handlePage(page > 1 ? page - 1 : page)}
               >
                 Previous
-              </a>
-              <a
-                href="#"
-                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              </div>
+              <div
+                className="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+                onClick={() =>
+                  handlePage(
+                    page < totalItems / ITEMS_PER_PAGE ? page + 1 : page
+                  )
+                }
               >
                 Next
-              </a>
+              </div>
             </div>
             <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
               <div>
@@ -496,20 +445,19 @@ export default function ProductList() {
                   className="isolate inline-flex -space-x-px rounded-md shadow-sm"
                   aria-label="Pagination"
                 >
-                  <a
-                    href="#"
-                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                  <div
+                    className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 cursor-pointer"
+                    onClick={() => handlePage(page > 1 ? page - 1 : page)}
                   >
                     <span className="sr-only">Previous</span>
                     <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-                  </a>
+                  </div>
 
                   {Array.from({
                     length: Math.ceil(totalItems / ITEMS_PER_PAGE),
                   }).map((el, index) => (
-                    <a
+                    <div
                       key={index}
-                      href="#"
                       onClick={(e) => handlePage(index + 1)}
                       aria-current="page"
                       className={`relative z-10 inline-flex items-center ${
@@ -519,16 +467,20 @@ export default function ProductList() {
                       } px-4 py-2 text-sm font-semibold  focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 cursor-pointer`}
                     >
                       {index + 1}
-                    </a>
+                    </div>
                   ))}
 
-                  <a
-                    href="#"
-                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                  <div
+                    className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 cursor-pointer"
+                    onClick={() =>
+                      handlePage(
+                        page < totalItems / ITEMS_PER_PAGE ? page + 1 : page
+                      )
+                    }
                   >
                     <span className="sr-only">Next</span>
                     <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-                  </a>
+                  </div>
                 </nav>
               </div>
             </div>
