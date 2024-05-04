@@ -58,9 +58,20 @@ const fetchBrands = async () => {
   }
 };
 
+const fetchProductsById = async (id) => {
+  try {
+    const response = await fetch(`http://localhost:8080/products/${id}`);
+    const data = await response.json();
+    return { data };
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 export {
   fetchAllProducts,
   fetchProductsByFilters,
   fetchCategories,
   fetchBrands,
+  fetchProductsById,
 };
