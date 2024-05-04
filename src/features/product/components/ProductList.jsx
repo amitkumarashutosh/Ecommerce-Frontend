@@ -1,6 +1,6 @@
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { Dialog, Disclosure, Menu, Transition } from "@headlessui/react";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { StarIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import {
   ChevronDownIcon,
   FunnelIcon,
@@ -10,72 +10,91 @@ import {
 } from "@heroicons/react/20/solid";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { Link } from "react-router-dom";
-
-const products = [
-  {
-    id: 1,
-    name: "Basic Tee",
-    href: "#",
-    imageSrc:
-      "https://tailwindui.com/img/ecommerce-images/product-page-01-related-product-01.jpg",
-    imageAlt: "Front of men's Basic Tee in black.",
-    price: "$35",
-    color: "Black",
-  },
-  {
-    id: 2,
-    name: "Basic Tee",
-    href: "#",
-    imageSrc:
-      "https://tailwindui.com/img/ecommerce-images/product-page-01-related-product-01.jpg",
-    imageAlt: "Front of men's Basic Tee in black.",
-    price: "$35",
-    color: "Black",
-  },
-];
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchAllProductsAsync,
+  fetchProductsByFiltersAsync,
+} from "../productSlice";
 
 const sortOptions = [
-  { name: "Most Popular", href: "#", current: true },
-  { name: "Best Rating", href: "#", current: false },
-  { name: "Newest", href: "#", current: false },
-  { name: "Price: Low to High", href: "#", current: false },
-  { name: "Price: High to Low", href: "#", current: false },
+  { name: "Best Rating", sort: "rating", order: "desc", current: false },
+  { name: "Price: Low to High", sort: "price", order: "asc", current: false },
+  { name: "Price: High to Low", sort: "price", order: "desc", current: false },
 ];
 
 const filters = [
   {
-    id: "color",
-    name: "Color",
-    options: [
-      { value: "white", label: "White", checked: false },
-      { value: "beige", label: "Beige", checked: false },
-      { value: "blue", label: "Blue", checked: true },
-      { value: "brown", label: "Brown", checked: false },
-      { value: "green", label: "Green", checked: false },
-      { value: "purple", label: "Purple", checked: false },
-    ],
-  },
-  {
     id: "category",
     name: "Category",
     options: [
-      { value: "new-arrivals", label: "New Arrivals", checked: false },
-      { value: "sale", label: "Sale", checked: false },
-      { value: "travel", label: "Travel", checked: true },
-      { value: "organization", label: "Organization", checked: false },
-      { value: "accessories", label: "Accessories", checked: false },
+      { value: "smartphones", label: "Smartphones", checked: false },
+      { value: "laptops", label: "Laptops", checked: false },
+      { value: "fragrances", label: "Fragrances", checked: false },
+      { value: "skincare", label: "Skincare", checked: false },
+      { value: "groceries", label: "Groceries", checked: false },
+      { value: "home-decoration", label: "Home decoration", checked: false },
+      { value: "furniture", label: "Furniture", checked: false },
+      { value: "tops", label: "Tops", checked: false },
+      { value: "womens-dresses", label: "Womens-dresses", checked: false },
+      { value: "womens-shoes", label: "Womens-shoes", checked: false },
+      { value: "mens-shirts", label: "Mens-shirts", checked: false },
+      { value: "mens-shoes", label: "Mens-shoes", checked: false },
+      { value: "mens-watches", label: "Mens-watches", checked: false },
+      { value: "womens-watches", label: "Womens-watches", checked: false },
+      { value: "womens-bags", label: "Womens Bags", checked: false },
+      { value: "womens-jewellery", label: "Womens Jewellery", checked: false },
+      { value: "sunglasses", label: "Sunglasses", checked: false },
+      { value: "automotive", label: "Automotive", checked: false },
+      { value: "motorcycle", label: "Motorcycle", checked: false },
+      { value: "lighting", label: "Lighting", checked: false },
     ],
   },
   {
-    id: "size",
-    name: "Size",
+    id: "brand",
+    name: "Brand",
     options: [
-      { value: "2l", label: "2L", checked: false },
-      { value: "6l", label: "6L", checked: false },
-      { value: "12l", label: "12L", checked: false },
-      { value: "18l", label: "18L", checked: false },
-      { value: "20l", label: "20L", checked: false },
-      { value: "40l", label: "40L", checked: true },
+      { value: "apple", label: "Apple", checked: false },
+      { value: "samsung", label: "Samsung", checked: false },
+      { value: "oppo", label: "OPPO", checked: false },
+      { value: "huawei", label: "Huawei", checked: false },
+      {
+        value: "microsoft surface",
+        label: "Microsoft Surface",
+        checked: false,
+      },
+      { value: "infinix", label: "Infinix", checked: false },
+      { value: "hp pavilion", label: "HP Pavilion", checked: false },
+      { value: "acqua di gio", label: "Acqua Di Gio", checked: false },
+      { value: "royal mirage", label: "Royal Mirage", checked: false },
+      {
+        value: "fog scent xpressio",
+        label: "Fog Scent Xpressio",
+        checked: false,
+      },
+      { value: "al munakh", label: "Al Munakh", checked: false },
+      { value: "lord - al-rehab", label: "Lord - Al-Rehab", checked: false },
+      { value: "l'oreal paris", label: "L'Oreal Paris", checked: false },
+      { value: "hemani tea", label: "Hemani Tea", checked: false },
+      { value: "dermive", label: "Dermive", checked: false },
+      { value: "rorec white rice", label: "ROREC White Rice", checked: false },
+      { value: "fair & clear", label: "Fair & Clear", checked: false },
+      { value: "saaf & khaas", label: "Saaf & Khaas", checked: false },
+      { value: "bake parlor big", label: "Bake Parlor Big", checked: false },
+      { value: "fauji", label: "Fauji", checked: false },
+      { value: "dry rose", label: "Dry Rose", checked: false },
+      { value: "boho decor", label: "Boho Decor", checked: false },
+      { value: "flying wooden", label: "Flying Wooden", checked: false },
+      { value: "led lights", label: "LED Lights", checked: false },
+      { value: "luxury palace", label: "Luxury Palace", checked: false },
+      {
+        value: "golden furniture bed set",
+        label: "Golden Furniture Bed Set",
+        checked: false,
+      },
+      { value: "rattan outdoor", label: "Rattan Outdoor", checked: false },
+      { value: "kitchen shelf", label: "Kitchen Shelf", checked: false },
+      { value: "multi-purpose", label: "Multi-Purpose", checked: false },
+      { value: "amnamart", label: "Amnamart", checked: false },
     ],
   },
 ];
@@ -86,6 +105,38 @@ function classNames(...classes) {
 
 export default function ProductList() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const dispatch = useDispatch();
+  const [filter, setFilter] = useState({});
+  const [sort, setSort] = useState({});
+
+  const { products } = useSelector((state) => state.product);
+
+  const handleFilter = (e, section, option) => {
+    const newFilter = { ...filter };
+    if (e.target.checked) {
+      if (newFilter[section.id]) {
+        newFilter[section.id].push(option.value);
+      } else {
+        newFilter[section.id] = [option.value];
+      }
+    } else {
+      const index = newFilter[section.id].findIndex(
+        (el) => el === option.value
+      );
+      newFilter[section.id].splice(index, 1);
+    }
+
+    setFilter(newFilter);
+  };
+
+  const handleSort = (e, option) => {
+    const newSort = { _sort: option.sort, _order: option.order };
+    setSort(newSort);
+  };
+
+  useEffect(() => {
+    dispatch(fetchProductsByFiltersAsync({ filter, sort }));
+  }, [dispatch, filter, sort]);
 
   return (
     <div className="bg-white">
@@ -177,6 +228,9 @@ export default function ProductList() {
                                       defaultValue={option.value}
                                       type="checkbox"
                                       defaultChecked={option.checked}
+                                      onChange={(e) =>
+                                        handleFilter(e, section, option)
+                                      }
                                       className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                     />
                                     <label
@@ -233,6 +287,7 @@ export default function ProductList() {
                         <Menu.Item key={option.name}>
                           {({ active }) => (
                             <a
+                              onClick={(e) => handleSort(e, option)}
                               href={option.href}
                               className={classNames(
                                 option.current
@@ -319,6 +374,9 @@ export default function ProductList() {
                                   defaultValue={option.value}
                                   type="checkbox"
                                   defaultChecked={option.checked}
+                                  onChange={(e) =>
+                                    handleFilter(e, section, option)
+                                  }
                                   className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
                                 />
                                 <label
@@ -341,34 +399,43 @@ export default function ProductList() {
               <div className="lg:col-span-3">
                 <div className="bg-white">
                   <div className="mx-auto max-w-2xl px-4 py-0 sm:px-6 sm:py-0 lg:max-w-7xl lg:px-8">
-                    <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
+                    <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8">
                       {products.map((product) => (
-                        <Link to="/product-detail">
-                          <div key={product.id} className="group relative">
-                            <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-80">
+                        <Link to="/product-detail/" key={product.id}>
+                          <div className="group relative border-solid border-2 border-gray-200 p-2">
+                            <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden rounded-md bg-gray-200 lg:aspect-none group-hover:opacity-75 lg:h-60">
                               <img
-                                src={product.imageSrc}
-                                alt={product.imageAlt}
+                                src={product.thumbnail}
+                                alt={product.title}
                                 className="h-full w-full object-cover object-center lg:h-full lg:w-full"
                               />
                             </div>
                             <div className="mt-4 flex justify-between">
                               <div>
                                 <h3 className="text-sm text-gray-700">
-                                  <a href={product.href}>
+                                  <div href={product.href}>
                                     <span
                                       aria-hidden="true"
                                       className="absolute inset-0"
                                     />
-                                    {product.name}
-                                  </a>
+                                    {product.title}
+                                  </div>
                                 </h3>
-                                <p className="mt-1 text-sm text-gray-500">
-                                  {product.color}
+                                <p className="mt-1 text-sm text-gray-500 flex items-center">
+                                  <StarIcon className="w-4 h-4 mr-1" />
+                                  {product.rating}
                                 </p>
                               </div>
                               <p className="text-sm font-medium text-gray-900">
-                                {product.price}
+                                ₹
+                                {Math.round(
+                                  product.price *
+                                    (1 - product.discountPercentage / 100)
+                                )}
+                                <span className=" line-through font-light ml-1">
+                                  {" "}
+                                  ₹{product.price}
+                                </span>
                               </p>
                             </div>
                           </div>
