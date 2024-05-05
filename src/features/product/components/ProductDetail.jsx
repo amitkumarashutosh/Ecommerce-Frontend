@@ -38,13 +38,9 @@ export default function Example() {
   const [selectedSize, setSelectedSize] = useState(sizes);
   const [product, setProduct] = useState(null);
 
-  console.log(product);
-
   const dispatch = useDispatch();
   const { selectedProduct } = useSelector((state) => state.product);
   const params = useParams();
-  console.log(product);
-
   useEffect(() => {
     dispatch(fetchProductsByIdAsync(params.id));
     setProduct(selectedProduct);
