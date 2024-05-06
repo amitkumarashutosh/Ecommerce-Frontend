@@ -25,7 +25,6 @@ export const checkUser = async (userData) => {
       body: JSON.stringify(userData),
     });
     const data = await response.json();
-
     return { data };
   } catch (error) {
     throw new Error(error.message);

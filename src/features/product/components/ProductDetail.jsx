@@ -4,6 +4,7 @@ import { RadioGroup } from "@headlessui/react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { fetchProductsByIdAsync } from "../productSlice";
+import { addToCartAsync } from "../../cart/cartSlice";
 
 const colors = [
   { name: "White", class: "bg-white", selectedClass: "ring-gray-400" },
@@ -36,14 +37,17 @@ function classNames(...classes) {
 export default function Example() {
   const [selectedColor, setSelectedColor] = useState(colors);
   const [selectedSize, setSelectedSize] = useState(sizes);
-  const [product, setProduct] = useState(null);
-
+  const product = useSelector((state) => state.product.selectedProduct);
+  const { currentUser } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
-  const { selectedProduct } = useSelector((state) => state.product);
   const params = useParams();
+
+  const handleCart = (e) => {
+    dispatch(addToCartAsync({ ...product, quantity: 1, user: currentUser.id }));
+  };
+
   useEffect(() => {
     dispatch(fetchProductsByIdAsync(params.id));
-    setProduct(selectedProduct);
   }, [dispatch, params.id]);
 
   return (
@@ -292,7 +296,8 @@ export default function Example() {
                 </div>
 
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleCart}
                   className="mt-10 flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-600 px-8 py-3 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                 >
                   Add to cart
