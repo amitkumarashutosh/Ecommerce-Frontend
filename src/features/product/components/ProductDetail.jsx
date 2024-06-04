@@ -43,7 +43,9 @@ export default function Example() {
   const params = useParams();
 
   const handleCart = (e) => {
-    dispatch(addToCartAsync({ ...product, quantity: 1, user: currentUser.id }));
+    const newItem = { ...product, quantity: 1, user: currentUser.id };
+    delete newItem["id"];
+    dispatch(addToCartAsync(newItem));
   };
 
   useEffect(() => {

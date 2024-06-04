@@ -13,7 +13,8 @@ export default function Signup() {
   const { currentUser, error } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
-  const onSubmit = (data) => {
+  const onSubmit = (data, e) => {
+    e.preventDefault();
     dispatch(checkUserAsync(data));
   };
   return (
@@ -32,7 +33,11 @@ export default function Signup() {
         </div>
 
         <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form
+            className="space-y-6"
+            noValidate
+            onSubmit={handleSubmit(onSubmit)}
+          >
             <div>
               <label
                 htmlFor="email"
